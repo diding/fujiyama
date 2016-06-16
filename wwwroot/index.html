@@ -10,13 +10,20 @@
 </head>
 <body>
 <div id="webgl"></div>
-<script src="../lib/three.min.js"></script>
-<script src="../lib/TrackballControls.js"></script> 
-<script src="../lib/TerrainLoader.js"></script> 
+<script src="./lib/three/three.js"></script>
+<script src="./lib/d3/d3.min.js"></script>
+<script src="./lib/math/Lut.js"></script>
+<script src="./lib/three/TrackballControls.js"></script>
+<script src="./lib/three/TerrainLoader.js"></script>
+<script src="./lib/three/stats.min.js"></script>
 <script>
 
     var width  = window.innerWidth,
-        height = window.innerHeight;
+            height = window.innerHeight;
+
+    var stats, lut;
+    var colorMap;
+    var numberOfColors;
 
     var scene = new THREE.Scene();
 
@@ -26,8 +33,19 @@
     var camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
     camera.position.set(0, -50, 50);
 
-    var renderer = new THREE.WebGLRenderer();
+    stats = new Stats();
+    document.getElementById("webgl").appendChild( stats.dom );
+
+    colorMap = 'rainbow';
+    numberOfColors = 512;
+    var lutColors = [];
+    lut = new THREE.Lut( colorMap, numberOfColors );
+    lut.setMax( 12 );
+    lut.setMin( 0 );
+
+    var renderer = new THREE.WebGLRenderer({ alpha: true });
     renderer.setSize(width, height);
+    renderer.setClearColor( 0xffffff, 0);
 
     var terrainLoader = new THREE.TerrainLoader();
     terrainLoader.load('../assets/fuji430x440.bil', function(data) {
@@ -42,12 +60,13 @@
         }
 
         var material = new THREE.MeshPhongMaterial({
-            color: 0xdddddd, 
-            wireframe: false
+            side: THREE.DoubleSide,
+            map: THREE.ImageUtils.loadTexture('../assets/fuji430x440.jpg')
         });
 
         var plane = new THREE.Mesh(geometry, material);
         scene.add(plane);
+        scene.add(new THREE.AmbientLight(0xeeeeee));
 
     });
 
